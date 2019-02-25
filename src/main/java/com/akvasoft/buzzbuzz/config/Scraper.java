@@ -28,10 +28,6 @@ public class Scraper implements InitializingBean {
         FirefoxDriver driver = new DriverInitializer().getFirefoxDriver();
         int x = 1;
         for (String link : links.getLinks()) {
-            if (x < 97) {
-                x++;
-                continue;
-            }
             scrape(link, driver);
             System.out.println("=============" + x);
             x++;
@@ -211,20 +207,6 @@ public class Scraper implements InitializingBean {
         modal.setSales_Company(sales_company);
         modal.setSales_Website(sales_company_web);
         repo.save(modal);
-        modal = null;
-        web = null;
-        ownership = null;
-        selling_status = null;
-        sales_started = null;
-        estimated_completion = null;
-        architect = null;
-        builder = null;
-        builder_web = null;
-        builder_contact = null;
-        marketing_company = null;
-        marketing_company_web = null;
-        sales_company = null;
-        sales_company_web = null;
         System.gc();
     }
 
