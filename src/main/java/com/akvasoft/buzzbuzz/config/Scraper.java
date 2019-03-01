@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,21 +24,35 @@ public class Scraper implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String url = "https://www.buzzbuzzhome.com/us/the-canyons-at-porter-ranch--pointe-collection";
-        Links links = new Links();
-        FirefoxDriver driver = new DriverInitializer().getFirefoxDriver();
-        int x = 1;
-        for (String link : links.getLinks()) {
-            scrape(link, driver);
-            System.out.println("=============" + x);
-            x++;
-        }
-        createExcelFile();
+//        Links links = new Links();
+//        FirefoxDriver driver = new DriverInitializer().getFirefoxDriver();
+//        int x = 1;
+//        boolean ok = false;
+//        Modal modal = null;
+//        for (String link : links.getLinks()) {
+//            if (link.equalsIgnoreCase("https://www.buzzbuzzhome.com/3170-west-olympic-boulevard")) {
+//                ok = true;
+//            }
+//
+//            if (!ok) {
+//                x++;
+//                continue;
+//            }
+//            modal = new Modal();
+//            modal.setLink(link);
+//            modal = repo.save(modal);
+//            scrape(link, driver, modal);
+
+//            createExcelFile();
+//            System.out.println("=============" + x);
+//            x++;
+//        }
+
+
     }
 
-    private boolean scrape(String url, FirefoxDriver driver) throws Exception, SessionNotCreatedException {
+    private boolean scrape(String url, FirefoxDriver driver, Modal modal) throws Exception, SessionNotCreatedException {
         System.out.println(url);
-        Modal modal = new Modal();
         driver.get(url);
         WebElement name = driver.findElementByXPath("/html/body/div[1]/div[3]/div[4]/div[1]/div[1]/div/div[1]/div[1]/div[1]");
         WebElement address = driver.findElementByXPath("/html/body/div[1]/div[3]/div[4]/div[1]/div[1]/div/div[1]/div[1]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]");
@@ -139,6 +154,8 @@ public class Scraper implements InitializingBean {
                 sales_started = element.getAttribute("innerText").replace("Sales Started:", "");
             } else if (element.getAttribute("innerText").contains("Estimated Completion:")) {
                 estimated_completion = element.getAttribute("innerText").replace("Estimated Completion:", "");
+            } else if (element.getAttribute("innerText").contains("Construction Status:")) {
+                modal.setPhase(element.getAttribute("innerText").replace("Construction Status:", ""));
             }
 
         }
@@ -247,10 +264,22 @@ public class Scraper implements InitializingBean {
     }
 
     private void createExcelFile() throws IOException {
-        List<Modal> datalist = repo.findAll();
-        String file = "/var/lib/tomcat8/CSV/buzzbuzz.csv";
+        List<Modal> datas = repo.findAll();
+        List<Modal> datalist = new ArrayList<>();
 
-        CSVWriter csvWriter = new CSVWriter(new FileWriter("/var/lib/tomcat8/CSV/buzzbuzz.csv"));
+        for (Modal datum : datas) {
+            for (Modal modal : datalist) {
+                if (modal.getLink().equalsIgnoreCase(datum.getLink())) {
+                    continue;
+                }
+                datalist.add(datum);
+            }
+
+        }
+
+        String file = "/var/lib/tomcat8/CSV/buzzbuzz_phase_update.csv";
+
+        CSVWriter csvWriter = new CSVWriter(new FileWriter("/var/lib/tomcat8/CSV/buzzbuzz_phase_update.csv"));
         List<String[]> csvRows = new LinkedList<String[]>();
         csvRows.add(new String[]
                 {

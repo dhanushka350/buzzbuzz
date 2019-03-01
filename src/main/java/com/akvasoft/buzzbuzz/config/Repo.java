@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface Repo extends JpaRepository<Modal, Integer> {
-    Modal getByLinkEquals(String link);
+    Modal getByK(String link);
 }
